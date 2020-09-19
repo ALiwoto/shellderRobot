@@ -1,4 +1,5 @@
-Shellder Robot
+![ShellderRobot](https://wallpapercave.com/wp/wp2438621.jpg)
+# Shellder Robot
 ==================
 
 Simple Telegram bot for remote shell on python. Works both on Windows and Linux (Mac not tested).
@@ -8,6 +9,9 @@ Simple Telegram bot for remote shell on python. Works both on Windows and Linux 
 * Telegram bot token
 
 #### Installation and running
+
+At first time running you will need enter bot token, then connect to bot in telegram and confirm admin account. That's all.
+
 ```
 pip install telepot
 git clone https://github.com/AnimeKaizoku/ShellderRobot.git
@@ -15,8 +19,6 @@ cd ShellderRobot
 py ShellderRobot.py
 
 ```
-
-At first time running you will need enter bot token, then connect to bot in telegram and confirm admin account. That's all.
 
 #### Bot commands
 Bot can use commands via plugins. For now there is only one plugin: aliases.py, with two commands: __/setalias__ and __/delalias__.
