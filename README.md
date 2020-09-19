@@ -1,4 +1,4 @@
-Telegram shell bot
+Shellder Robot
 ==================
 
 Simple Telegram bot for remote shell on python. Works both on Windows and Linux (Mac not tested).
@@ -10,9 +10,10 @@ Simple Telegram bot for remote shell on python. Works both on Windows and Linux 
 #### Installation and running
 ```
 pip install telepot
-git clone https://github.com/byjk/tgshellbot.git
-cd tgshellbot
-python3 tgsbot.py
+git clone https://github.com/AnimeKaizoku/ShellderRobot.git
+cd ShellderRobot
+py ShellderRobot.py
+
 ```
 
 At first time running you will need enter bot token, then connect to bot in telegram and confirm admin account. That's all.
