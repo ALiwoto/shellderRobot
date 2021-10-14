@@ -96,7 +96,7 @@ class TelegramShellBot:
             s = t.split(' ')
             if len(s) > 0 and s[0].lower() == 'cd':
                 if len(s) > 1:
-                    os.chdir(s[1])
+                    os.chdir(" ".join(s[1:]).replace("\"", ""))
                 self.sendMessage(os.getcwd())
             else:
                 if not self.cmdHandler(t):        
