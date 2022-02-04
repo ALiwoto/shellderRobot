@@ -24,7 +24,11 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, getter outputGetter) erro
 		whole = strings.TrimSpace(whole)
 
 		output, errOut, err := getter(whole)
-		errStr := err.Error()
+
+		var errStr string
+		if err != nil {
+			errStr = err.Error()
+		}
 		if len(output+errOut+errStr) > 4080 {
 			myAllStr := output + "\n\n" + errOut + "\n\n" + errStr
 			_, _ = b.SendDocument(msg.Chat.Id, []byte(myAllStr), &gotgbot.SendDocumentOpts{
