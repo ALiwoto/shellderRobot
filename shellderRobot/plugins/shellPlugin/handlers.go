@@ -89,14 +89,19 @@ func exitHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	msg := ctx.EffectiveMessage
-	whole := strings.Join(ws.SplitN(msg.Text, 2, " ", "\n", "\r", "\t")[1:], "")
-	whole = strings.TrimSpace(whole)
-	exitcode, _ := strconv.Atoi(whole)
-	md := mdparser.GetNormal("Exiting with code " + strconv.Itoa(exitcode))
+	myStr := ws.SplitN(msg.Text, 2, " ", "\n", "\r", "\t")
+	var exitCode int
+	if len(myStr) > 1 {
+		whole := myStr[1]
+		whole = strings.TrimSpace(whole)
+		exitCode, _ = strconv.Atoi(whole)
+	}
+
+	md := mdparser.GetNormal("Exiting with code " + strconv.Itoa(exitCode))
 	_, _ = msg.Reply(b, md.ToString(), &gotgbot.SendMessageOpts{
 		ParseMode: utils.MarkDownV2,
 	})
-	os.Exit(exitcode)
+	os.Exit(exitCode)
 
 	return ext.EndGroups
 }
@@ -121,7 +126,7 @@ func uploadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	whole := myStrs[1]
 	whole = strings.TrimSpace(whole)
-	mfile, err := os.Open(whole)
+	myFile, err := os.Open(whole)
 	if err != nil {
 		errMd := mdparser.GetBold("Error:\n").Mono(err.Error())
 		_, _ = msg.Reply(b, errMd.ToString(), &gotgbot.SendMessageOpts{
@@ -131,9 +136,15 @@ func uploadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return ext.EndGroups
 	}
 
+	md := mdparser.GetBold("Uploading ").Mono(whole).Normal("...")
+	topMsg, _ := msg.Reply(b, md.ToString(), &gotgbot.SendMessageOpts{
+		ParseMode:                utils.MarkDownV2,
+		AllowSendingWithoutReply: true,
+	})
+
 	f := gotgbot.NamedFile{
 		FileName: path.Base(whole),
-		File:     mfile,
+		File:     myFile,
 	}
 
 	if len(whole) > 4090 {
@@ -145,8 +156,17 @@ func uploadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ReplyToMessageId: msg.MessageId,
 		Caption:          mdparser.GetMono(whole).ToString(),
 	})
-	if err != nil {
-		return ext.EndGroups
+
+	if topMsg != nil {
+		if err != nil {
+			md := mdparser.GetBold("Error:\n").Mono(err.Error())
+			_, _, _ = topMsg.EditText(b, md.ToString(), &gotgbot.EditMessageTextOpts{
+				ParseMode: utils.MarkDownV2,
+			})
+			return ext.EndGroups
+		}
+
+		_, _ = topMsg.Delete(b)
 	}
 
 	return ext.EndGroups
@@ -209,7 +229,10 @@ func downloadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		myPath = allStrs[1]
 	}
 
-	md := mdparser.GetMono("Downloading " + fileType + "...")
+	md := mdparser.GetMono("Downloading ").Bold(fileType)
+	if myPath != "" {
+		md.Normal(" to ").Mono(myPath)
+	}
 
 	topMsg, _ := msg.Reply(b, md.ToString(), &gotgbot.SendMessageOpts{
 		ParseMode:             utils.MarkDownV2,
