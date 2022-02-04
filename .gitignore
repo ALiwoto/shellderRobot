@@ -16,6 +16,7 @@ labs/
 
 # ignore debug binary file
 __debug_bin
+botBinary
 
 # ignore config file
 config.ini
