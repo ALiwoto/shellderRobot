@@ -67,7 +67,7 @@ func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	ShellCommand := handlers.NewCommand(cmdPre, shellHandler)
 	downloadCommand := handlers.NewCommand(cmdPre+downloadCmd, downloadHandler)
 	uploadCommand := handlers.NewCommand(cmdPre+uploadCmd, uploadHandler)
-	exitCommand := handlers.NewCommand(cmdPre+uploadCmd, exitHandler)
+	exitCommand := handlers.NewCommand(cmdPre+exitCmd, exitHandler)
 	ShellCommand.Triggers = t
 	downloadCommand.Triggers = t
 	uploadCommand.Triggers = t

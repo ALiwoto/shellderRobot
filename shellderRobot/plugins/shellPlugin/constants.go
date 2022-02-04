@@ -8,4 +8,5 @@ const (
 const (
 	downloadCmd = "download"
 	uploadCmd   = "upload"
+	exitCmd     = "exit"
 )
