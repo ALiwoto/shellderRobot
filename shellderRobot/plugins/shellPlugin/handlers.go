@@ -45,7 +45,11 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, getter outputGetter) erro
 
 		if errStr != "" {
 			md := mdparser.GetBold("Error:\n").Mono(errStr)
-			md.Normal("\n\n").Mono(output).Normal("\n\n").Mono(errOut)
+			if output != "" {
+				md.Normal("\n\n").Mono(output)
+			}
+
+			md.Normal("\n\n").Mono(errOut)
 			_, err = b.SendMessage(msg.Chat.Id, md.ToString(), &gotgbot.SendMessageOpts{
 				ParseMode:                utils.MarkDownV2,
 				ReplyToMessageId:         msg.MessageId,
@@ -54,12 +58,13 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, getter outputGetter) erro
 			if err != nil {
 				logging.Error(err)
 			}
+
 			return ext.EndGroups
 		}
 
 		md := mdparser.GetBold("Output:\n").Mono(output)
 		if errOut != "" {
-			md.Normal("\n\n\n").Bold("StdError:\n").Mono(errOut)
+			md.Normal("\n\n").Bold("StdError:\n").Mono(errOut)
 		}
 
 		_, err = b.SendMessage(msg.Chat.Id, md.ToString(), &gotgbot.SendMessageOpts{
