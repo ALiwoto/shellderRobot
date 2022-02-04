@@ -1,5 +1,22 @@
-.vscode/
-*.pyc
-*.conf
-env
-venv
+.env
+.docker_build/
+bin/
+*.exe
+vendor/
+sibylBinary
+PsychoPass
+sibylSystem
+*.old.go
+woto_files/
+tmp_files/
+labs/
+*.old.go
+*.db
+*.log
+
+# ignore debug binary file
+__debug_bin
+
+# ignore config file
+config.ini
+*.token
