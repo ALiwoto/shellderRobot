@@ -1,6 +1,10 @@
 package wotoConfig
 
 import (
+	"errors"
+	"os"
+	"syscall"
+
 	"github.com/ALiwoto/StrongStringGo/strongStringGo"
 )
 
@@ -13,6 +17,21 @@ func ParseConfig(filename string) (*BotConfig, error) {
 	err := strongStringGo.ParseConfig(config, filename)
 	if err != nil {
 		return nil, err
+	}
+
+	l := len(config.DownloadDirectory)
+	if l != 0 {
+		if config.DownloadDirectory[l-1] != os.PathSeparator {
+			config.DownloadDirectory += string(os.PathSeparator)
+		}
+
+		_, err = os.ReadDir(config.DownloadDirectory)
+		if errors.Is(err, syscall.ENOENT) {
+			err = os.Mkdir(config.DownloadDirectory, 0644)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	ConfigSettings = config
@@ -48,6 +67,13 @@ func IsAllowed(id int64) bool {
 func GetBotToken() string {
 	if ConfigSettings != nil {
 		return ConfigSettings.BotToken
+	}
+	return ""
+}
+
+func GetDownloadDirectory() string {
+	if ConfigSettings != nil {
+		return ConfigSettings.DownloadDirectory
 	}
 	return ""
 }

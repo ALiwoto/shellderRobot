@@ -3,20 +3,19 @@
 bin/
 *.exe
 vendor/
-sibylBinary
-PsychoPass
-sibylSystem
 *.old.go
 woto_files/
 tmp_files/
 labs/
 *.old.go
+*.old.c
 *.db
 *.log
 
 # ignore debug binary file
 __debug_bin
 botBinary
+downloads/
 
 # ignore config file
 config.ini

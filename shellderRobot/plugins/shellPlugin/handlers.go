@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -147,8 +148,8 @@ func uploadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		File:     myFile,
 	}
 
-	if len(whole) > 4090 {
-		whole = whole[:4090]
+	if len(whole) > 2040 {
+		whole = whole[:2040]
 	}
 
 	_, err = b.SendDocument(msg.Chat.Id, f, &gotgbot.SendDocumentOpts{
@@ -229,6 +230,10 @@ func downloadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		myPath = allStrs[1]
 	}
 
+	if !strings.Contains(myPath, string(os.PathSeparator)) {
+		myPath = wotoConfig.GetDownloadDirectory() + myPath
+	}
+
 	md := mdparser.GetMono("Downloading ").Bold(fileType)
 	if myPath != "" {
 		md.Normal(" to ").Mono(myPath)
@@ -277,9 +282,14 @@ func shellHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return ext.EndGroups
 	}
 
-	if os.PathSeparator == '/' {
+	switch runtime.GOOS {
+	case "linux":
 		return termHandlerBase(b, ctx, Shellout)
+	case "windows":
+		return termHandlerBase(b, ctx, Cmdout)
 	}
 
-	return termHandlerBase(b, ctx, Cmdout)
+	_, _ = ctx.EffectiveMessage.Reply(b, unsupportedMessage, nil)
+
+	return ext.EndGroups
 }

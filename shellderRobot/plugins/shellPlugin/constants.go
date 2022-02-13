@@ -1,5 +1,7 @@
 package shellPlugin
 
+import "runtime"
+
 const (
 	ShellToUseUnix = "bash"
 	ShellToUseWin  = "cmd"
@@ -7,6 +9,12 @@ const (
 
 const (
 	downloadCmd = "download"
-	uploadCmd   = "upload"
+	uploadCmd   = "dl"
+	dlCmd       = "download"
+	ulCmd       = "ul"
 	exitCmd     = "exit"
+)
+
+const (
+	unsupportedMessage = "Unsupported operating system: " + runtime.GOOS
 )
