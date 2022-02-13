@@ -27,7 +27,7 @@ func ParseConfig(filename string) (*BotConfig, error) {
 
 		_, err = os.ReadDir(config.DownloadDirectory)
 		if errors.Is(err, syscall.ENOENT) {
-			err = os.Mkdir(config.DownloadDirectory, 0644)
+			err = os.Mkdir(config.DownloadDirectory, 0755)
 			if err != nil {
 				return nil, err
 			}
