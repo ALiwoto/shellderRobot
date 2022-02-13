@@ -9,8 +9,8 @@ const (
 
 const (
 	downloadCmd = "download"
-	uploadCmd   = "dl"
-	dlCmd       = "download"
+	uploadCmd   = "upload"
+	dlCmd       = "dl"
 	ulCmd       = "ul"
 	exitCmd     = "exit"
 )
