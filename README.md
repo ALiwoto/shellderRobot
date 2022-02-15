@@ -1,30 +1,30 @@
 
 # Shellder Robot
-===============
+A bot that uses telegram as a console shell, written in golang. 
 
-A bot that uses telegram as a console shell, written in go lang. 
+<hr/>
 
+## How to set up
+Here is the sample config:
 
-
-==============
-In the config, there is a variable for setting up the trigger
-
+```ini
 [general]
 bot_token = 123456789:abcdefg
 owner_ids = 1234587, 12345784, 1234578
+download_directory = downloads
 handler_command = vega
 drop_updates = true
 debug = false
+```
 
-It's handler_command variable
-consider it's set to vega
-so by using /vega cmd it runs the command in shell and returns the result
-/vegaDownload, /vegaDownload <path> and  /vegaDownload <file_name> will download the file (first one downloads the file to current bot directory and saves the file with its file id as its name)
-as for file path, you can give it a relative path, or an absolute path
 
-it have /vegaUpload <path> as well
-if you give it a file name, it will search for file in the current directory of the bot
-similar to download, you can give absolute or relative path as well
+- `handler_command` variable specifies the command for running scripts.
+> For example if it's set to `vega`, the command will be `/vega shell command`.
+
+- additional commands such as download and upload are implemented as well, using the `handler_command` as their prefix.
+> For example `/vegaDl <specified_path>` (dl short for download and ul short for upload) will download the content of replied messages to the specified path. You can give an either relative or absolute path to download a file/media content. (uploading works similar as well with `/vegaUl <file_path>` command)
+
+- `download_directory` is the directory in which all downloaded contents go, unless you specify a directory while using download command. Do notice that this directory should be put in `.gitignore` file as well.
 
 
 
