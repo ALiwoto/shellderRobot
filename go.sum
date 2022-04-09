@@ -3,6 +3,8 @@ github.com/ALiwoto/StrongStringGo v1.0.9 h1:sQp7A0a3enAY9gvAU5kvzht+IexYZ/UEu3Xy
 github.com/ALiwoto/StrongStringGo v1.0.9/go.mod h1:t7WxtiphnwdgJaq443DSCAw7q+Ut3V8Pg1kT6IcdKmE=
 github.com/ALiwoto/StrongStringGo v1.0.10 h1:Zy8pvVWrdtueXFxC4HjU0lyVZbz/F1UtD8IVVL48Pgs=
 github.com/ALiwoto/StrongStringGo v1.0.10/go.mod h1:t7WxtiphnwdgJaq443DSCAw7q+Ut3V8Pg1kT6IcdKmE=
+github.com/ALiwoto/StrongStringGo v1.0.19 h1:OhiwoMseu7eQ5dMSpRy2Z86AWYHjq79rKE3kxHeuRRw=
+github.com/ALiwoto/StrongStringGo v1.0.19/go.mod h1:TTdQ00xWfw4XTbG49A42DDSAODPsCUi0ZCRPM+/ga1k=
 github.com/ALiwoto/argparser v1.0.4 h1:j3IAUVj+ad5rJwhPhCDgII+zwTQy8RmqqYgXBYMNLZc=
 github.com/ALiwoto/argparser v1.0.4/go.mod h1:U4zPGNeNPjAllE8kzU+tNL8XUatPfe3VJBoS/fj3qfk=
 github.com/ALiwoto/mdparser v1.0.7 h1:tIorE6pZfLTLlmyaHEWa2bG9UpZzGYgTPcSxDshcO8w=
@@ -11,6 +13,8 @@ github.com/ALiwoto/mdparser v1.0.10 h1:fV1YePSwHNCqEboFDvaTrHqTiUazTWVKBER03HUAA
 github.com/ALiwoto/mdparser v1.0.10/go.mod h1:oKSQ8y6XxAX5Z1CWX7M9pRPNyGINi0fGGvu4GIJTebw=
 github.com/ALiwoto/mdparser v1.0.11 h1:qQq8e3Bco60ziiMFhq1F8QLaFhnB+pBtkg6dvdcwDzg=
 github.com/ALiwoto/mdparser v1.0.11/go.mod h1:aOfQn8/SEPOFdMRhhE0oaFomYgQLJ+8QUG0EFvWUGBg=
+github.com/ALiwoto/mdparser v1.0.12 h1:HcbdwC5/T2FH7Hwa1bT6EUkDKZp46khEh7walHRbXTU=
+github.com/ALiwoto/mdparser v1.0.12/go.mod h1:DF420RaJFmh6PNvaM9ago77Rw9XVXwEJaE/oJOJE7s8=
 github.com/ALiwoto/sibylSystemGo v1.0.5 h1:/uihi+JijF6W/s/qjv33nSdvE5yfuoRkhFb1rrVBu9Y=
 github.com/ALiwoto/sibylSystemGo v1.0.5/go.mod h1:dbRdKAt0r0riIfXneL/FA5KWBhJJdyVYm/uVkZyIPWM=
 github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.1/go.mod h1:r815fYWTudnU9JhtsJAxUtuV7QrSgKpChJkfTSMFpfg=
@@ -47,6 +51,8 @@ go.uber.org/multierr v1.6.0 h1:y6IPFStTAIT5Ytl7/XYmHvzXQ7S3g/IeZW9hyZ5thw4=
 go.uber.org/multierr v1.6.0/go.mod h1:cdWPpRnG4AhwMwsgIHip0KRBQjJy5kYEpYjJxpXp9iU=
 go.uber.org/multierr v1.7.0 h1:zaiO/rmgFjbmCXdSYJWQcdvOCsthmdaHfr3Gm2Kx4Ec=
 go.uber.org/multierr v1.7.0/go.mod h1:7EAYxJLBy9rStEaz58O2t4Uvip6FSURkq8/ppBp95ak=
+go.uber.org/multierr v1.8.0 h1:dg6GjLku4EH+249NNmoIciG9N/jURbDG+pFlTkhzIC8=
+go.uber.org/multierr v1.8.0/go.mod h1:7EAYxJLBy9rStEaz58O2t4Uvip6FSURkq8/ppBp95ak=
 go.uber.org/zap v1.20.0 h1:N4oPlghZwYG55MlU6LXk/Zp00FVNE9X9wrYO8CEs4lc=
 go.uber.org/zap v1.20.0/go.mod h1:wjWOCqI0f2ZZrJF/UufIOkiC8ii6tm1iqIsLo76RfJw=
 go.uber.org/zap v1.21.0 h1:WefMeulhovoZ2sYXz7st6K0sLj7bBhpiFaud4r4zST8=

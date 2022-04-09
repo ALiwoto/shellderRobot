@@ -7,6 +7,7 @@ import (
 )
 
 func SendAlert(b *gotgbot.Bot, m *gotgbot.Message, md mdparser.WMarkDown) error {
+	md.Replace(b.Token, "$TOKEN")
 	_, _ = m.Reply(b, md.ToString(), &gotgbot.SendMessageOpts{
 		ParseMode:                MarkDownV2,
 		DisableWebPagePreview:    true,
