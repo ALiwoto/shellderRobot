@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/ALiwoto/mdparser/mdparser"
 	"github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/logging"
 	"github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/wotoConfig"
 	wv "github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/wotoValues"
@@ -26,6 +27,8 @@ func StartTelegramBot() error {
 	if err != nil {
 		return err
 	}
+
+	mdparser.AddSecret(b.Token, "$TOKEN")
 
 	utmp := ext.NewUpdater(nil)
 	updater := &utmp

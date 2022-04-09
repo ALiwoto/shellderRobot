@@ -15,6 +15,8 @@ github.com/ALiwoto/mdparser v1.0.11 h1:qQq8e3Bco60ziiMFhq1F8QLaFhnB+pBtkg6dvdcwD
 github.com/ALiwoto/mdparser v1.0.11/go.mod h1:aOfQn8/SEPOFdMRhhE0oaFomYgQLJ+8QUG0EFvWUGBg=
 github.com/ALiwoto/mdparser v1.0.12 h1:HcbdwC5/T2FH7Hwa1bT6EUkDKZp46khEh7walHRbXTU=
 github.com/ALiwoto/mdparser v1.0.12/go.mod h1:DF420RaJFmh6PNvaM9ago77Rw9XVXwEJaE/oJOJE7s8=
+github.com/ALiwoto/mdparser v1.0.14 h1:9VJ8ABnnHqe4nu+C+2EsNNU2sDh1tOlg1pUdLOpBwrE=
+github.com/ALiwoto/mdparser v1.0.14/go.mod h1:DF420RaJFmh6PNvaM9ago77Rw9XVXwEJaE/oJOJE7s8=
 github.com/ALiwoto/sibylSystemGo v1.0.5 h1:/uihi+JijF6W/s/qjv33nSdvE5yfuoRkhFb1rrVBu9Y=
 github.com/ALiwoto/sibylSystemGo v1.0.5/go.mod h1:dbRdKAt0r0riIfXneL/FA5KWBhJJdyVYm/uVkZyIPWM=
 github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.1/go.mod h1:r815fYWTudnU9JhtsJAxUtuV7QrSgKpChJkfTSMFpfg=

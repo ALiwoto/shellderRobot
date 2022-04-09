@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/ALiwoto/StrongStringGo v1.0.19
-	github.com/ALiwoto/mdparser v1.0.12
+	github.com/ALiwoto/mdparser v1.0.14
 	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.6
 	go.uber.org/zap v1.21.0
 )
