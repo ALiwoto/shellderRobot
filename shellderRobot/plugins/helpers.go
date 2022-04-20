@@ -30,7 +30,12 @@ func StartTelegramBot() error {
 
 	mdparser.AddSecret(b.Token, "$TOKEN")
 
-	utmp := ext.NewUpdater(nil)
+	uOptions := &ext.UpdaterOpts{
+		DispatcherOpts: ext.DispatcherOpts{
+			MaxRoutines: -1,
+		},
+	}
+	utmp := ext.NewUpdater(uOptions)
 	updater := &utmp
 	err = updater.StartPolling(b, &ext.PollingOpts{
 		DropPendingUpdates: wotoConfig.DropUpdates(),
