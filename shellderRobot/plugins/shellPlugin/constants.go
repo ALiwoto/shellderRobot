@@ -8,6 +8,7 @@ const (
 )
 
 const (
+	vserversCmd = "vservers"
 	downloadCmd = "download"
 	uploadCmd   = "upload"
 	dlCmd       = "dl"

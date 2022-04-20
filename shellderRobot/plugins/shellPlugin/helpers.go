@@ -64,19 +64,24 @@ func Bashout(command string) (string, string, error) {
 
 func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	cmdPre := wotoConfig.GetHandlerCommand()
-	ShellCommand := handlers.NewCommand(cmdPre, shellHandler)
+	shellCommand := handlers.NewCommand(cmdPre, shellHandler)
+	vserversCommand := handlers.NewCommand(vserversCmd, shellHandler)
 	downloadCommand := handlers.NewCommand(cmdPre+downloadCmd, downloadHandler)
 	uploadCommand := handlers.NewCommand(cmdPre+uploadCmd, uploadHandler)
 	dlCommand := handlers.NewCommand(cmdPre+dlCmd, downloadHandler)
 	ulCommand := handlers.NewCommand(cmdPre+ulCmd, uploadHandler)
 	exitCommand := handlers.NewCommand(cmdPre+exitCmd, exitHandler)
-	ShellCommand.Triggers = t
+
+	shellCommand.Triggers = t
+	vserversCommand.Triggers = t
 	downloadCommand.Triggers = t
 	uploadCommand.Triggers = t
 	dlCommand.Triggers = t
 	ulCommand.Triggers = t
 	exitCommand.Triggers = t
-	d.AddHandler(ShellCommand)
+
+	d.AddHandler(vserversCommand)
+	d.AddHandler(shellCommand)
 	d.AddHandler(downloadCommand)
 	d.AddHandler(uploadCommand)
 	d.AddHandler(dlCommand)
