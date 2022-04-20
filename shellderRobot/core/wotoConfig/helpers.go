@@ -5,7 +5,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/ALiwoto/StrongStringGo/strongStringGo"
+	"github.com/AnimeKaizoku/ssg/ssg"
 )
 
 func ParseConfig(filename string) (*BotConfig, error) {
@@ -14,7 +14,7 @@ func ParseConfig(filename string) (*BotConfig, error) {
 	}
 	config := &BotConfig{}
 
-	err := strongStringGo.ParseConfig(config, filename)
+	err := ssg.ParseConfig(config, filename)
 	if err != nil {
 		return nil, err
 	}
