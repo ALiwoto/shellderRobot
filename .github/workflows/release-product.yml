@@ -1,7 +1,10 @@
-name: flutter-linux
+name: release-product
 
 on:
   push:
+    branches:
+      - Production
+  pull_request:
     branches:
       - Production
 
