@@ -5,7 +5,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/AnimeKaizoku/ssg/ssg"
+	sp "github.com/AnimeKaizoku/ssg/ssg/strongParser"
 )
 
 func ParseConfig(filename string) (*BotConfig, error) {
@@ -14,7 +14,9 @@ func ParseConfig(filename string) (*BotConfig, error) {
 	}
 	config := &BotConfig{}
 
-	err := ssg.ParseConfig(config, filename)
+	err := sp.ParseConfigWithOption(config, filename, &sp.ConfigParserOptions{
+		ReadEnv: true,
+	})
 	if err != nil {
 		return nil, err
 	}
