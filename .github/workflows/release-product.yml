@@ -43,7 +43,7 @@ jobs:
           path: artifact/
 
   build-linux-amd64:
-    name: Build for windows
+    name: Build for linux amd64
     runs-on: ubuntu-latest
     env:
       GIT: "https://github.com"
@@ -80,7 +80,7 @@ jobs:
 
 
   build-linux-arm64:
-    name: Build for windows
+    name: Build for linux arm64
     runs-on: ubuntu-latest
     env:
       GIT: "https://github.com"
