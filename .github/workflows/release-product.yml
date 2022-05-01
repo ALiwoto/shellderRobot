@@ -1,0 +1,112 @@
+name: flutter-linux
+
+on:
+  push:
+    branches:
+      - Production
+
+jobs:
+  build-windows:
+    name: Build for windows
+    runs-on: windows-latest
+    env:
+      GIT: "https://github.com"
+      UPLOAD_ARTIFACT: "true"
+      ONLY_CACHE: "false"
+      MANUAL_CACHING: "1"
+      AUTO_CACHING: "1"
+      CXX: "g++ -static-libstdc++"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: set up go
+        uses: actions/setup-go@v3
+          with:
+            go-version: 1.18
+      
+      - name: build binary
+        run: go build -o botBinary.exe
+
+      - name: Move artifact
+        if: env.UPLOAD_ARTIFACT == 'true'
+        run: |
+          mkdir artifact
+          mv botBinary.exe artifact/
+      - uses: actions/upload-artifact@master
+        if: env.UPLOAD_ARTIFACT == 'true'
+        name: Upload artifact.
+        with:
+          name: botBinary.exe
+          path: artifact/
+
+  build-linux-amd64:
+    name: Build for windows
+    runs-on: ubuntu-latest
+    env:
+      GIT: "https://github.com"
+      UPLOAD_ARTIFACT: "true"
+      ONLY_CACHE: "false"
+      MANUAL_CACHING: "1"
+      AUTO_CACHING: "1"
+      CXX: "g++ -static-libstdc++"
+      GOOS: linux
+      GOARCH: amd64
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: set up go
+        uses: actions/setup-go@v3
+          with:
+            go-version: 1.18
+      
+      - name: build binary
+        run: go build -o botBinary-amd64
+
+      - name: Move artifact
+        if: env.UPLOAD_ARTIFACT == 'true'
+        run: |
+          mkdir artifact
+          mv botBinary-amd64 artifact/
+      - uses: actions/upload-artifact@master
+        if: env.UPLOAD_ARTIFACT == 'true'
+        name: Upload artifact.
+        with:
+          name: botBinary-amd64
+          path: artifact/
+
+
+
+  build-linux-arm64:
+    name: Build for windows
+    runs-on: ubuntu-latest
+    env:
+      GIT: "https://github.com"
+      UPLOAD_ARTIFACT: "true"
+      ONLY_CACHE: "false"
+      MANUAL_CACHING: "1"
+      AUTO_CACHING: "1"
+      CXX: "g++ -static-libstdc++"
+      GOOS: linux
+      GOARCH: arm64
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: set up go
+        uses: actions/setup-go@v3
+          with:
+            go-version: 1.18
+      
+      - name: build binary
+        run: go build -o botBinary-arm64
+
+      - name: Move artifact
+        if: env.UPLOAD_ARTIFACT == 'true'
+        run: |
+          mkdir artifact
+          mv botBinary-arm64 artifact/
+      - uses: actions/upload-artifact@master
+        if: env.UPLOAD_ARTIFACT == 'true'
+        name: Upload artifact.
+        with:
+          name: botBinary-arm64
+          path: artifact/
