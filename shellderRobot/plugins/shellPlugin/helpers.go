@@ -96,6 +96,7 @@ func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	dlCommand := handlers.NewCommand(cmdPre+dlCmd, downloadHandler)
 	ulCommand := handlers.NewCommand(cmdPre+ulCmd, uploadHandler)
 	exitCommand := handlers.NewCommand(cmdPre+exitCmd, exitHandler)
+	cancelCallBack := handlers.NewCallback(cancelButtonFilter, cancelButtonCallBackQuery)
 
 	shellCommand.Triggers = t
 	vserversCommand.Triggers = t
@@ -112,4 +113,5 @@ func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	d.AddHandler(dlCommand)
 	d.AddHandler(ulCommand)
 	d.AddHandler(exitCommand)
+	d.AddHandler(cancelCallBack)
 }

@@ -119,8 +119,7 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context) error {
 
 		uId := container.GetUniqueId()
 		commandsMap.Add(uId, container)
-		md := mdparser.GetBold("Executing ").Mono("#" + uId).Normal("...")
-		botMsg, err := msg.Reply(b, md.ToString(), &gotgbot.SendMessageOpts{
+		botMsg, err := msg.Reply(b, container.ParseAsMd().ToString(), &gotgbot.SendMessageOpts{
 			ParseMode:             utils.MarkDownV2,
 			ReplyMarkup:           generateCancelButton(uId),
 			DisableWebPagePreview: true,
@@ -154,6 +153,56 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context) error {
 		log.Println("reached ")
 		finishedFunc()
 	}
+
+	return ext.EndGroups
+}
+
+func cancelButtonFilter(cq *gotgbot.CallbackQuery) bool {
+	return strings.HasPrefix(cq.Data, executeCancelDataPrefix+cbDataSep)
+}
+
+func cancelButtonCallBackQuery(b *gotgbot.Bot, ctx *ext.Context) error {
+	user := ctx.EffectiveUser
+	query := ctx.CallbackQuery
+	if !wotoConfig.IsAllowed(user.Id) {
+		_, _ = query.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      "This button is not for you...",
+			CacheTime: 5500,
+		})
+		return ext.EndGroups
+	}
+
+	// format is like: caEx_UNIQUE-ID
+	myStrs := strings.Split(query.Data, cbDataSep)
+	if len(myStrs) < 2 {
+		// impossible to happen, this condition is here only to prevent
+		// panics
+		return ext.EndGroups
+	}
+
+	uniqueId := myStrs[1]
+	container := commandsMap.Get(uniqueId)
+	if container == nil {
+		// data is either too old, or it has been removed
+		// from our memory... in any case, this shouldn't
+		// happen here, we should make sure the moment data
+		// is deleted from memory, bot's message is edited as well.
+		// (unless the bot is rebooted)
+		_, _ = query.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      "This command is either too old, or I've removed it from my memory...",
+			CacheTime: 5500,
+		})
+		return ext.EndGroups
+	}
+
+	container.killRequestedBy = user
+	_, _ = query.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      "Killing the process, please wait...",
+		CacheTime: 5500,
+	})
+
+	container.Kill()
+	commandsMap.Delete(uniqueId)
 
 	return ext.EndGroups
 }

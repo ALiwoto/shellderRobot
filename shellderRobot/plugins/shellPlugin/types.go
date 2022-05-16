@@ -11,6 +11,7 @@ type commandContainer struct {
 	bot               *gotgbot.Bot
 	userContext       *ext.Context
 	botMessage        *gotgbot.Message
+	killRequestedBy   *gotgbot.User
 	isCanceled        bool
 	isRunningSilently bool
 }
