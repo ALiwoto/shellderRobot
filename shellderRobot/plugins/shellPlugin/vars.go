@@ -8,7 +8,7 @@ import (
 
 var (
 	lastId           int
-	idGeneratorMutex *sync.Mutex
+	idGeneratorMutex *sync.Mutex = &sync.Mutex{}
 )
 
 var commandsMap = ssg.NewSafeMap[string, commandContainer]()
