@@ -1,12 +1,15 @@
 package shellPlugin
 
 import (
+	"bytes"
+	"context"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
-	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/logging"
 	"github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/utils"
@@ -14,46 +17,82 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 
-	ws "github.com/AnimeKaizoku/ssg/ssg"
 	"github.com/ALiwoto/mdparser/mdparser"
+	"github.com/AnimeKaizoku/ssg/ssg"
+	ws "github.com/AnimeKaizoku/ssg/ssg"
 )
 
-func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, getter outputGetter) error {
+func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.EffectiveMessage
-	whole := strings.Join(ws.SplitN(msg.Text, 2, " ", "\n", "\r", "\t")[1:], "")
+	wholeStrs := ws.SplitN(msg.Text, 2, " ", "\n", "\r", "\t")
+	if len(wholeStrs) < 2 {
+		// No command
+		// TODO: show stats and... stuff
+		return ext.EndGroups
+	}
+	whole := wholeStrs[1]
 	whole = strings.TrimSpace(whole)
 
-	output, errOut, err := getter(whole)
+	finishChan := make(chan bool)
 
-	var errStr string
-	if err != nil {
-		errStr = err.Error()
-	}
-	if len(output+errOut+errStr) > 4080 {
-		myAllStr := output + "\n\n" + errOut + "\n\n" + errStr
-		_, _ = b.SendDocument(msg.Chat.Id, []byte(myAllStr), &gotgbot.SendDocumentOpts{
-			ReplyToMessageId:         msg.MessageId,
-			AllowSendingWithoutReply: true,
-		})
-		return ext.EndGroups
-	}
+	result := ssg.RunCommandAsyncWithChan(whole, finishChan)
+	result.UniqueId = generateUniqueId()
 
-	if output == "" && errOut == "" && err == nil {
-		_, _ = b.SendMessage(msg.Chat.Id, "No output", &gotgbot.SendMessageOpts{
-			ParseMode:                utils.MarkDownV2,
-			ReplyToMessageId:         msg.MessageId,
-			AllowSendingWithoutReply: true,
-		})
-		return ext.EndGroups
-	}
-
-	if errStr != "" {
-		md := mdparser.GetBold("Error:\n").Mono(errStr)
-		if output != "" {
-			md.Normal("\n\n").Mono(output)
+	finishedFunc := func() {
+		var errStr string
+		err := result.Error
+		output := result.Stdout
+		errOut := result.Stderr
+		if err != nil {
+			errStr = err.Error()
 		}
 
-		md.Normal("\n\n").Mono(errOut)
+		if len(output+errOut+errStr) > 4080 {
+			myAllStr := output + "\n\n" + errOut + "\n\n" + errStr
+			namedFile := &gotgbot.NamedFile{
+				File:     bytes.NewBuffer([]byte(myAllStr)),
+				FileName: "output.txt",
+			}
+			_, _ = b.SendDocument(msg.Chat.Id, namedFile, &gotgbot.SendDocumentOpts{
+				ReplyToMessageId:         msg.MessageId,
+				AllowSendingWithoutReply: true,
+			})
+			return
+		}
+
+		if output == "" && errOut == "" && err == nil {
+			_, _ = b.SendMessage(msg.Chat.Id, "No output", &gotgbot.SendMessageOpts{
+				ParseMode:                utils.MarkDownV2,
+				ReplyToMessageId:         msg.MessageId,
+				AllowSendingWithoutReply: true,
+			})
+			return
+		}
+
+		if errStr != "" {
+			md := mdparser.GetBold("Error:\n").Mono(errStr)
+			if output != "" {
+				md.Normal("\n\n").Mono(output)
+			}
+
+			md.Normal("\n\n").Mono(errOut)
+			_, err = b.SendMessage(msg.Chat.Id, md.ToString(), &gotgbot.SendMessageOpts{
+				ParseMode:                utils.MarkDownV2,
+				ReplyToMessageId:         msg.MessageId,
+				AllowSendingWithoutReply: true,
+			})
+			if err != nil {
+				logging.Error(err)
+			}
+
+			return
+		}
+
+		md := mdparser.GetBold("Output:\n").Mono(output)
+		if errOut != "" {
+			md.Normal("\n\n").Bold("StdError:\n").Mono(errOut)
+		}
+
 		_, err = b.SendMessage(msg.Chat.Id, md.ToString(), &gotgbot.SendMessageOpts{
 			ParseMode:                utils.MarkDownV2,
 			ReplyToMessageId:         msg.MessageId,
@@ -62,22 +101,58 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, getter outputGetter) erro
 		if err != nil {
 			logging.Error(err)
 		}
+	}
 
+	deadlineCtx, cancelContext := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancelContext()
+
+	var container *commandContainer
+
+	select {
+	case <-deadlineCtx.Done():
+		// command is taking longer than expected
+		container = &commandContainer{
+			result:      result,
+			bot:         b,
+			userContext: ctx,
+		}
+
+		uId := container.GetUniqueId()
+		commandsMap.Add(uId, container)
+		md := mdparser.GetBold("Executing ").Mono("#" + uId).Normal("...")
+		botMsg, err := msg.Reply(b, md.ToString(), &gotgbot.SendMessageOpts{
+			ParseMode:             utils.MarkDownV2,
+			ReplyMarkup:           generateCancelButton(uId),
+			DisableWebPagePreview: true,
+		})
+		if err != nil {
+			container.isRunningSilently = true
+		}
+
+		container.botMessage = botMsg
+	case <-finishChan:
+		// Finished, send the output directly
+		close(finishChan)
+		finishedFunc()
 		return ext.EndGroups
 	}
 
-	md := mdparser.GetBold("Output:\n").Mono(output)
-	if errOut != "" {
-		md.Normal("\n\n").Bold("StdError:\n").Mono(errOut)
+	<-finishChan
+	close(finishChan)
+	if container.isCanceled {
+		// we assume that cancel callback handler has already handled
+		// everything here, all we have to do here is to return and kill
+		// the goroutine.
+		return ext.EndGroups
 	}
 
-	_, err = b.SendMessage(msg.Chat.Id, md.ToString(), &gotgbot.SendMessageOpts{
-		ParseMode:                utils.MarkDownV2,
-		ReplyToMessageId:         msg.MessageId,
-		AllowSendingWithoutReply: true,
-	})
-	if err != nil {
-		logging.Error(err)
+	if result.IsDone() {
+		finishedFunc()
+		return nil
+	} else {
+		// impossible to reach, but needs more investigation...
+		log.Println("reached ")
+		finishedFunc()
 	}
 
 	return ext.EndGroups
@@ -282,14 +357,7 @@ func shellHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return ext.EndGroups
 	}
 
-	switch runtime.GOOS {
-	case "linux":
-		return termHandlerBase(b, ctx, Shellout)
-	case "windows":
-		return termHandlerBase(b, ctx, Cmdout)
-	}
-
-	_, _ = ctx.EffectiveMessage.Reply(b, unsupportedMessage, nil)
+	go termHandlerBase(b, ctx)
 
 	return ext.EndGroups
 }

@@ -7,9 +7,13 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
+	"time"
 
 	"github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/wotoConfig"
 	wv "github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/wotoValues"
+	"github.com/AnimeKaizoku/ssg/ssg"
+	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 )
@@ -27,6 +31,27 @@ func Shellout(command string) (string, string, error) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	return stdout.String(), stderr.String(), err
+}
+
+func generateCancelButton(uniqueId string) *gotgbot.InlineKeyboardMarkup {
+	return &gotgbot.InlineKeyboardMarkup{
+		InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+			{
+				{
+					Text:         "Cancel",
+					CallbackData: executeCancelDataPrefix + cbDataSep + uniqueId,
+				},
+			},
+		},
+	}
+}
+
+func generateUniqueId() string {
+	idGeneratorMutex.Lock()
+	defer idGeneratorMutex.Unlock()
+	lastId++
+
+	return strconv.Itoa(lastId) + "Z" + ssg.ToBase32(time.Now().Unix())
 }
 
 func DownloadFile(filePath string) ([]byte, error) {

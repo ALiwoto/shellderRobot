@@ -8,12 +8,14 @@ const (
 )
 
 const (
-	vserversCmd = "vservers"
-	downloadCmd = "download"
-	uploadCmd   = "upload"
-	dlCmd       = "dl"
-	ulCmd       = "ul"
-	exitCmd     = "exit"
+	vserversCmd             = "vservers"
+	downloadCmd             = "download"
+	uploadCmd               = "upload"
+	dlCmd                   = "dl"
+	ulCmd                   = "ul"
+	exitCmd                 = "exit"
+	executeCancelDataPrefix = "caEx"
+	cbDataSep               = "_"
 )
 
 const (
