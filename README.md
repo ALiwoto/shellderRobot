@@ -1,5 +1,5 @@
 
-# Shellder Robot
+# Shell Robot
 A bot that uses telegram as a console shell, written in golang. 
 
 <hr/>
