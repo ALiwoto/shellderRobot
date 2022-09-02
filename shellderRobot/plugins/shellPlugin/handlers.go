@@ -3,7 +3,6 @@ package shellPlugin
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -18,7 +17,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 
 	"github.com/ALiwoto/mdparser/mdparser"
-	"github.com/AnimeKaizoku/ssg/ssg"
 	ws "github.com/AnimeKaizoku/ssg/ssg"
 )
 
@@ -35,7 +33,7 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	finishChan := make(chan bool)
 
-	result := ssg.RunCommandAsyncWithChan(whole, finishChan)
+	result := ws.RunCommandAsyncWithChan(whole, finishChan)
 	result.UniqueId = generateUniqueId()
 
 	finishedFunc := func() {
@@ -131,13 +129,11 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context) error {
 		container.botMessage = botMsg
 	case <-finishChan:
 		// Finished, send the output directly
-		close(finishChan)
 		finishedFunc()
 		return ext.EndGroups
 	}
 
 	<-finishChan
-	close(finishChan)
 	if container.isCanceled {
 		// we assume that cancel callback handler has already handled
 		// everything here, all we have to do here is to return and kill
@@ -291,7 +287,7 @@ func uploadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return ext.EndGroups
 		}
 
-		_, _ = topMsg.Delete(b)
+		_, _ = topMsg.Delete(b, nil)
 	}
 
 	return ext.EndGroups
@@ -368,7 +364,7 @@ func downloadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		DisableWebPagePreview: true,
 	})
 
-	f, err := b.GetFile(fileId)
+	f, err := b.GetFile(fileId, nil)
 	if err != nil {
 		return utils.SendAlertErr(b, msg, err)
 	}
@@ -382,13 +378,13 @@ func downloadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		myPath = f.FilePath
 	}
 
-	err = ioutil.WriteFile(myPath, bytes, 0644)
+	err = os.WriteFile(myPath, bytes, 0644)
 	if err != nil {
 		return utils.SendAlertErr(b, msg, err)
 	}
 
 	if topMsg != nil {
-		_, _ = topMsg.Delete(b)
+		_, _ = topMsg.Delete(b, nil)
 	}
 
 	md = mdparser.GetBold("Downloaded to ").Mono(myPath)

@@ -3,7 +3,7 @@ package shellPlugin
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -55,7 +55,7 @@ func generateUniqueId() string {
 }
 
 func DownloadFile(filePath string) ([]byte, error) {
-	pre := fmt.Sprintf("%s/file/bot%s/", wv.HelperBot.GetAPIURL(), wv.HelperBot.Token)
+	pre := fmt.Sprintf("%s/file/bot%s/", wv.HelperBot.GetAPIURL(), wv.HelperBot.GetToken())
 
 	resp, err := http.Get(pre + filePath)
 	if err != nil {
@@ -64,7 +64,7 @@ func DownloadFile(filePath string) ([]byte, error) {
 
 	defer resp.Body.Close()
 
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
 
 func Cmdout(command string) (string, string, error) {

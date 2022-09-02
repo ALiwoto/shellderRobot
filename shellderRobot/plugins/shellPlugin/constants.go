@@ -1,7 +1,5 @@
 package shellPlugin
 
-import "runtime"
-
 const (
 	ShellToUseUnix = "bash"
 	ShellToUseWin  = "cmd"
@@ -18,6 +16,6 @@ const (
 	cbDataSep               = "_"
 )
 
-const (
-	unsupportedMessage = "Unsupported operating system: " + runtime.GOOS
-)
+// const (
+// unsupportedMessage = "Unsupported operating system: " + runtime.GOOS
+// )
