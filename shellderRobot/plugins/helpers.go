@@ -20,15 +20,16 @@ func StartTelegramBot() error {
 	}
 
 	b, err := gotgbot.NewBot(token, &gotgbot.BotOpts{
-		Client:      http.Client{},
-		GetTimeout:  gotgbot.DefaultGetTimeout,
-		PostTimeout: gotgbot.DefaultPostTimeout,
+		Client: http.Client{},
+		RequestOpts: &gotgbot.RequestOpts{
+			Timeout: 2 * gotgbot.DefaultTimeout,
+		},
 	})
 	if err != nil {
 		return err
 	}
 
-	mdparser.AddSecret(b.Token, "$TOKEN")
+	mdparser.AddSecret(b.GetToken(), "$TOKEN")
 
 	uOptions := &ext.UpdaterOpts{
 		DispatcherOpts: ext.DispatcherOpts{

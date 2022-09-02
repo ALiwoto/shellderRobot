@@ -1,12 +1,14 @@
 package shellPlugin
 
 import (
-	"io/ioutil"
+	"bytes"
+	"context"
+	"log"
 	"os"
 	"path"
-	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/logging"
 	"github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/utils"
@@ -14,46 +16,81 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 
-	ws "github.com/AnimeKaizoku/ssg/ssg"
 	"github.com/ALiwoto/mdparser/mdparser"
+	ws "github.com/AnimeKaizoku/ssg/ssg"
 )
 
-func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, getter outputGetter) error {
+func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context) error {
 	msg := ctx.EffectiveMessage
-	whole := strings.Join(ws.SplitN(msg.Text, 2, " ", "\n", "\r", "\t")[1:], "")
+	wholeStrs := ws.SplitN(msg.Text, 2, " ", "\n", "\r", "\t")
+	if len(wholeStrs) < 2 {
+		// No command
+		// TODO: show stats and... stuff
+		return ext.EndGroups
+	}
+	whole := wholeStrs[1]
 	whole = strings.TrimSpace(whole)
 
-	output, errOut, err := getter(whole)
+	finishChan := make(chan bool)
 
-	var errStr string
-	if err != nil {
-		errStr = err.Error()
-	}
-	if len(output+errOut+errStr) > 4080 {
-		myAllStr := output + "\n\n" + errOut + "\n\n" + errStr
-		_, _ = b.SendDocument(msg.Chat.Id, []byte(myAllStr), &gotgbot.SendDocumentOpts{
-			ReplyToMessageId:         msg.MessageId,
-			AllowSendingWithoutReply: true,
-		})
-		return ext.EndGroups
-	}
+	result := ws.RunCommandAsyncWithChan(whole, finishChan)
+	result.UniqueId = generateUniqueId()
 
-	if output == "" && errOut == "" && err == nil {
-		_, _ = b.SendMessage(msg.Chat.Id, "No output", &gotgbot.SendMessageOpts{
-			ParseMode:                utils.MarkDownV2,
-			ReplyToMessageId:         msg.MessageId,
-			AllowSendingWithoutReply: true,
-		})
-		return ext.EndGroups
-	}
-
-	if errStr != "" {
-		md := mdparser.GetBold("Error:\n").Mono(errStr)
-		if output != "" {
-			md.Normal("\n\n").Mono(output)
+	finishedFunc := func() {
+		var errStr string
+		err := result.Error
+		output := result.Stdout
+		errOut := result.Stderr
+		if err != nil {
+			errStr = err.Error()
 		}
 
-		md.Normal("\n\n").Mono(errOut)
+		if len(output+errOut+errStr) > 4080 {
+			myAllStr := output + "\n\n" + errOut + "\n\n" + errStr
+			namedFile := &gotgbot.NamedFile{
+				File:     bytes.NewBuffer([]byte(myAllStr)),
+				FileName: "output.txt",
+			}
+			_, _ = b.SendDocument(msg.Chat.Id, namedFile, &gotgbot.SendDocumentOpts{
+				ReplyToMessageId:         msg.MessageId,
+				AllowSendingWithoutReply: true,
+			})
+			return
+		}
+
+		if output == "" && errOut == "" && err == nil {
+			_, _ = b.SendMessage(msg.Chat.Id, "No output", &gotgbot.SendMessageOpts{
+				ParseMode:                utils.MarkDownV2,
+				ReplyToMessageId:         msg.MessageId,
+				AllowSendingWithoutReply: true,
+			})
+			return
+		}
+
+		if errStr != "" {
+			md := mdparser.GetBold("Error:\n").Mono(errStr)
+			if output != "" {
+				md.Normal("\n\n").Mono(output)
+			}
+
+			md.Normal("\n\n").Mono(errOut)
+			_, err = b.SendMessage(msg.Chat.Id, md.ToString(), &gotgbot.SendMessageOpts{
+				ParseMode:                utils.MarkDownV2,
+				ReplyToMessageId:         msg.MessageId,
+				AllowSendingWithoutReply: true,
+			})
+			if err != nil {
+				logging.Error(err)
+			}
+
+			return
+		}
+
+		md := mdparser.GetBold("Output:\n").Mono(output)
+		if errOut != "" {
+			md.Normal("\n\n").Bold("StdError:\n").Mono(errOut)
+		}
+
 		_, err = b.SendMessage(msg.Chat.Id, md.ToString(), &gotgbot.SendMessageOpts{
 			ParseMode:                utils.MarkDownV2,
 			ReplyToMessageId:         msg.MessageId,
@@ -62,23 +99,106 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, getter outputGetter) erro
 		if err != nil {
 			logging.Error(err)
 		}
+	}
 
+	deadlineCtx, cancelContext := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancelContext()
+
+	var container *commandContainer
+
+	select {
+	case <-deadlineCtx.Done():
+		// command is taking longer than expected
+		container = &commandContainer{
+			result:      result,
+			bot:         b,
+			userContext: ctx,
+		}
+
+		uId := container.GetUniqueId()
+		commandsMap.Add(uId, container)
+		botMsg, err := msg.Reply(b, container.ParseAsMd().ToString(), &gotgbot.SendMessageOpts{
+			ParseMode:             utils.MarkDownV2,
+			ReplyMarkup:           generateCancelButton(uId),
+			DisableWebPagePreview: true,
+		})
+		if err != nil {
+			container.isRunningSilently = true
+		}
+
+		container.botMessage = botMsg
+	case <-finishChan:
+		// Finished, send the output directly
+		finishedFunc()
 		return ext.EndGroups
 	}
 
-	md := mdparser.GetBold("Output:\n").Mono(output)
-	if errOut != "" {
-		md.Normal("\n\n").Bold("StdError:\n").Mono(errOut)
+	<-finishChan
+	if container.isCanceled {
+		// we assume that cancel callback handler has already handled
+		// everything here, all we have to do here is to return and kill
+		// the goroutine.
+		return ext.EndGroups
 	}
 
-	_, err = b.SendMessage(msg.Chat.Id, md.ToString(), &gotgbot.SendMessageOpts{
-		ParseMode:                utils.MarkDownV2,
-		ReplyToMessageId:         msg.MessageId,
-		AllowSendingWithoutReply: true,
-	})
-	if err != nil {
-		logging.Error(err)
+	if result.IsDone() {
+		finishedFunc()
+		return nil
+	} else {
+		// impossible to reach, but needs more investigation...
+		log.Println("reached ")
+		finishedFunc()
 	}
+
+	return ext.EndGroups
+}
+
+func cancelButtonFilter(cq *gotgbot.CallbackQuery) bool {
+	return strings.HasPrefix(cq.Data, executeCancelDataPrefix+cbDataSep)
+}
+
+func cancelButtonCallBackQuery(b *gotgbot.Bot, ctx *ext.Context) error {
+	user := ctx.EffectiveUser
+	query := ctx.CallbackQuery
+	if !wotoConfig.IsAllowed(user.Id) {
+		_, _ = query.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      "This button is not for you...",
+			CacheTime: 5500,
+		})
+		return ext.EndGroups
+	}
+
+	// format is like: caEx_UNIQUE-ID
+	myStrs := strings.Split(query.Data, cbDataSep)
+	if len(myStrs) < 2 {
+		// impossible to happen, this condition is here only to prevent
+		// panics
+		return ext.EndGroups
+	}
+
+	uniqueId := myStrs[1]
+	container := commandsMap.Get(uniqueId)
+	if container == nil {
+		// data is either too old, or it has been removed
+		// from our memory... in any case, this shouldn't
+		// happen here, we should make sure the moment data
+		// is deleted from memory, bot's message is edited as well.
+		// (unless the bot is rebooted)
+		_, _ = query.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      "This command is either too old, or I've removed it from my memory...",
+			CacheTime: 5500,
+		})
+		return ext.EndGroups
+	}
+
+	container.killRequestedBy = user
+	_, _ = query.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      "Killing the process, please wait...",
+		CacheTime: 5500,
+	})
+
+	container.Kill()
+	commandsMap.Delete(uniqueId)
 
 	return ext.EndGroups
 }
@@ -167,7 +287,7 @@ func uploadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return ext.EndGroups
 		}
 
-		_, _ = topMsg.Delete(b)
+		_, _ = topMsg.Delete(b, nil)
 	}
 
 	return ext.EndGroups
@@ -244,7 +364,7 @@ func downloadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		DisableWebPagePreview: true,
 	})
 
-	f, err := b.GetFile(fileId)
+	f, err := b.GetFile(fileId, nil)
 	if err != nil {
 		return utils.SendAlertErr(b, msg, err)
 	}
@@ -258,13 +378,13 @@ func downloadHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		myPath = f.FilePath
 	}
 
-	err = ioutil.WriteFile(myPath, bytes, 0644)
+	err = os.WriteFile(myPath, bytes, 0644)
 	if err != nil {
 		return utils.SendAlertErr(b, msg, err)
 	}
 
 	if topMsg != nil {
-		_, _ = topMsg.Delete(b)
+		_, _ = topMsg.Delete(b, nil)
 	}
 
 	md = mdparser.GetBold("Downloaded to ").Mono(myPath)
@@ -282,14 +402,7 @@ func shellHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return ext.EndGroups
 	}
 
-	switch runtime.GOOS {
-	case "linux":
-		return termHandlerBase(b, ctx, Shellout)
-	case "windows":
-		return termHandlerBase(b, ctx, Cmdout)
-	}
-
-	_, _ = ctx.EffectiveMessage.Reply(b, unsupportedMessage, nil)
+	go termHandlerBase(b, ctx)
 
 	return ext.EndGroups
 }

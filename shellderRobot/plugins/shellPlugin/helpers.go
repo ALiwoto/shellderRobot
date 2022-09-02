@@ -3,13 +3,17 @@ package shellPlugin
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
+	"time"
 
 	"github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/wotoConfig"
 	wv "github.com/AnimeKaizoku/shellderRobot/shellderRobot/core/wotoValues"
+	"github.com/AnimeKaizoku/ssg/ssg"
+	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 )
@@ -29,8 +33,29 @@ func Shellout(command string) (string, string, error) {
 	return stdout.String(), stderr.String(), err
 }
 
+func generateCancelButton(uniqueId string) *gotgbot.InlineKeyboardMarkup {
+	return &gotgbot.InlineKeyboardMarkup{
+		InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
+			{
+				{
+					Text:         "Cancel",
+					CallbackData: executeCancelDataPrefix + cbDataSep + uniqueId,
+				},
+			},
+		},
+	}
+}
+
+func generateUniqueId() string {
+	idGeneratorMutex.Lock()
+	defer idGeneratorMutex.Unlock()
+	lastId++
+
+	return strconv.Itoa(lastId) + "Z" + ssg.ToBase32(time.Now().Unix())
+}
+
 func DownloadFile(filePath string) ([]byte, error) {
-	pre := fmt.Sprintf("%s/file/bot%s/", wv.HelperBot.GetAPIURL(), wv.HelperBot.Token)
+	pre := fmt.Sprintf("%s/file/bot%s/", wv.HelperBot.GetAPIURL(), wv.HelperBot.GetToken())
 
 	resp, err := http.Get(pre + filePath)
 	if err != nil {
@@ -39,7 +64,7 @@ func DownloadFile(filePath string) ([]byte, error) {
 
 	defer resp.Body.Close()
 
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
 
 func Cmdout(command string) (string, string, error) {
@@ -71,6 +96,7 @@ func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	dlCommand := handlers.NewCommand(cmdPre+dlCmd, downloadHandler)
 	ulCommand := handlers.NewCommand(cmdPre+ulCmd, uploadHandler)
 	exitCommand := handlers.NewCommand(cmdPre+exitCmd, exitHandler)
+	cancelCallBack := handlers.NewCallback(cancelButtonFilter, cancelButtonCallBackQuery)
 
 	shellCommand.Triggers = t
 	vserversCommand.Triggers = t
@@ -87,4 +113,5 @@ func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	d.AddHandler(dlCommand)
 	d.AddHandler(ulCommand)
 	d.AddHandler(exitCommand)
+	d.AddHandler(cancelCallBack)
 }
