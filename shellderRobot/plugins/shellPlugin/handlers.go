@@ -143,6 +143,12 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	if result.IsDone() {
 		finishedFunc()
+		if container.botMessage != nil {
+			// this here needs a better design, idk maybe show execution time,
+			// or put button there to paste it on pasty or something like that...
+			// maybe in future.
+			_, _ = container.botMessage.Delete(b, nil)
+		}
 		return nil
 	} else {
 		// impossible to reach, but needs more investigation...
