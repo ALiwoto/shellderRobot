@@ -26,6 +26,12 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, executeType CommandExecut
 	if len(wholeStrs) < 2 {
 		// No command
 		// TODO: show stats and... stuff
+		md := mdparser.GetNormal(wotoConfig.GetHandlerCommand() + "ShellBot is active!")
+		_, _ = b.SendMessage(msg.Chat.Id, md.ToString(), &gotgbot.SendMessageOpts{
+			ParseMode:                utils.MarkDownV2,
+			ReplyToMessageId:         msg.MessageId,
+			AllowSendingWithoutReply: true,
+		})
 		return ext.EndGroups
 	}
 	whole := wholeStrs[1]
