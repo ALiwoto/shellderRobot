@@ -50,6 +50,10 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, executeType CommandExecut
 	finishedFunc := func() {
 		var errStr string
 		err := result.Error
+		if executeType == CommandExecuteTypePowerShell {
+			result.PurifyPowerShellOutput()
+		}
+
 		output := result.Stdout
 		errOut := result.Stderr
 		if err != nil {
@@ -420,6 +424,17 @@ func shellHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	go termHandlerBase(b, ctx, CommandExecuteTypeCmd)
+
+	return ext.EndGroups
+}
+
+func powerShellHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	user := ctx.EffectiveUser
+	if user == nil || !wotoConfig.IsAllowed(user.Id) {
+		return ext.EndGroups
+	}
+
+	go termHandlerBase(b, ctx, CommandExecuteTypePowerShell)
 
 	return ext.EndGroups
 }

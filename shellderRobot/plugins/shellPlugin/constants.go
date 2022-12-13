@@ -8,6 +8,7 @@ const (
 const (
 	vServersCmd             = "vservers"
 	downloadCmd             = "download"
+	powerShellCmd           = "ps"
 	uploadCmd               = "upload"
 	dlCmd                   = "dl"
 	ulCmd                   = "ul"

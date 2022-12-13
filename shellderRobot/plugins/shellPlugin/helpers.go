@@ -91,6 +91,7 @@ func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	cmdPre := wotoConfig.GetHandlerCommand()
 	shellCommand := handlers.NewCommand(cmdPre, shellHandler)
 	vServersCommand := handlers.NewCommand(vServersCmd, shellHandler)
+	powerShellCommand := handlers.NewCommand(cmdPre+powerShellCmd, powerShellHandler)
 	downloadCommand := handlers.NewCommand(cmdPre+downloadCmd, downloadHandler)
 	uploadCommand := handlers.NewCommand(cmdPre+uploadCmd, uploadHandler)
 	dlCommand := handlers.NewCommand(cmdPre+dlCmd, downloadHandler)
@@ -100,6 +101,7 @@ func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 
 	shellCommand.Triggers = t
 	vServersCommand.Triggers = t
+	powerShellCommand.Triggers = t
 	downloadCommand.Triggers = t
 	uploadCommand.Triggers = t
 	dlCommand.Triggers = t
@@ -107,6 +109,7 @@ func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	exitCommand.Triggers = t
 
 	d.AddHandler(vServersCommand)
+	d.AddHandler(powerShellCommand)
 	d.AddHandler(shellCommand)
 	d.AddHandler(downloadCommand)
 	d.AddHandler(uploadCommand)
