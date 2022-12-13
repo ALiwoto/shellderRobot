@@ -6,7 +6,7 @@ const (
 )
 
 const (
-	vserversCmd             = "vservers"
+	vServersCmd             = "vservers"
 	downloadCmd             = "download"
 	uploadCmd               = "upload"
 	dlCmd                   = "dl"
@@ -14,6 +14,11 @@ const (
 	exitCmd                 = "exit"
 	executeCancelDataPrefix = "caEx"
 	cbDataSep               = "_"
+)
+
+const (
+	CommandExecuteTypeCmd = 0 + iota
+	CommandExecuteTypePowerShell
 )
 
 // const (

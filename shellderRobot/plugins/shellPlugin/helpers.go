@@ -90,7 +90,7 @@ func Bashout(command string) (string, string, error) {
 func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	cmdPre := wotoConfig.GetHandlerCommand()
 	shellCommand := handlers.NewCommand(cmdPre, shellHandler)
-	vserversCommand := handlers.NewCommand(vserversCmd, shellHandler)
+	vServersCommand := handlers.NewCommand(vServersCmd, shellHandler)
 	downloadCommand := handlers.NewCommand(cmdPre+downloadCmd, downloadHandler)
 	uploadCommand := handlers.NewCommand(cmdPre+uploadCmd, uploadHandler)
 	dlCommand := handlers.NewCommand(cmdPre+dlCmd, downloadHandler)
@@ -99,14 +99,14 @@ func LoadAllHandlers(d *ext.Dispatcher, t []rune) {
 	cancelCallBack := handlers.NewCallback(cancelButtonFilter, cancelButtonCallBackQuery)
 
 	shellCommand.Triggers = t
-	vserversCommand.Triggers = t
+	vServersCommand.Triggers = t
 	downloadCommand.Triggers = t
 	uploadCommand.Triggers = t
 	dlCommand.Triggers = t
 	ulCommand.Triggers = t
 	exitCommand.Triggers = t
 
-	d.AddHandler(vserversCommand)
+	d.AddHandler(vServersCommand)
 	d.AddHandler(shellCommand)
 	d.AddHandler(downloadCommand)
 	d.AddHandler(uploadCommand)

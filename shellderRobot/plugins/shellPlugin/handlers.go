@@ -20,7 +20,7 @@ import (
 	ws "github.com/AnimeKaizoku/ssg/ssg"
 )
 
-func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context) error {
+func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context, executeType CommandExecuteType) error {
 	msg := ctx.EffectiveMessage
 	wholeStrs := ws.SplitN(msg.Text, 2, " ", "\n", "\r", "\t")
 	if len(wholeStrs) < 2 {
@@ -32,8 +32,19 @@ func termHandlerBase(b *gotgbot.Bot, ctx *ext.Context) error {
 	whole = strings.TrimSpace(whole)
 
 	finishChan := make(chan bool)
+	var result *ws.ExecuteCommandResult
 
-	result := ws.RunCommandAsyncWithChan(whole, finishChan)
+	switch executeType {
+	case CommandExecuteTypeCmd:
+		result = ws.RunCommandAsyncWithChan(whole, finishChan)
+	case CommandExecuteTypePowerShell:
+		result = ws.RunPowerShellAsyncWithChan(whole, finishChan)
+	default:
+		// pretty sure it's impossible to reach here, just letting this
+		// to be here to prevent from future panics/errors/unexpected behavior.
+		return ext.ContinueGroups
+	}
+
 	result.UniqueId = generateUniqueId()
 
 	finishedFunc := func() {
@@ -408,7 +419,7 @@ func shellHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return ext.EndGroups
 	}
 
-	go termHandlerBase(b, ctx)
+	go termHandlerBase(b, ctx, CommandExecuteTypeCmd)
 
 	return ext.EndGroups
 }

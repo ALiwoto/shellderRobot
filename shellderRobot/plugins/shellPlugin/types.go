@@ -15,3 +15,5 @@ type commandContainer struct {
 	isCanceled        bool
 	isRunningSilently bool
 }
+
+type CommandExecuteType uint8
